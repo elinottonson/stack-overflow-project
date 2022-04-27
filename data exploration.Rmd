@@ -19,15 +19,16 @@ stack.df <- read.csv("survey_results_public.csv")
 ```{r}
 ##get rows that have a salary
 stack.withsal.df <- stack.df[!is.na(stack.df$ConvertedCompYearly),]
+stack.entry.df <- stack.withsal.df[which(stack.withsal.df$YearsCodePro<=1),]
 ```
 
 ```{r}
 # set up cut-off values 
-breaks <- c(10000,20000,40000,60000,80000,100000,120000,140000,160000,180000,200000)
+breaks <- c(5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,75000, 100000, 200000)
 # specify interval/bin labels
-tags <- c("[10-20)","[20-40)", "[40-60)", "[60-80)", "[80-100)", "[100-120)","[120-140)", "[140-160)","[160-180)", "[180-200)")
+tags <- c("[0-5)","[5-10)", "[15-20)", "[20-25)", "[25-30)", "[30-35)","[35-40)", "[40-45)","[45-50)", "[50-75)", "[75-100)", "[100-200)")
 
-group_tags <- cut(stack.withsal.df$ConvertedCompYearly, 
+group_tags <- cut(stack.entry.df$ConvertedCompYearly, 
                   breaks=breaks, 
                   include.lowest=TRUE, 
                   right=FALSE, 
