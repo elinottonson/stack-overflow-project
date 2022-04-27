@@ -2,9 +2,42 @@
 title: "Stack Overflow Survey Analysis"
 author: "Eli Nottonson and Kenneth Heisler"
 output: html_notebook
+editor_options: 
+  chunk_output_type: console
 ---
+```{r}
+library(ggplot2)
+library(tibble)
+```
+
+```{r}
+##import dataset
+stack.df <- read.csv("survey_results_public.csv")
+```
 
 
 ```{r}
+##get rows that have a salary
+stack.withsal.df <- stack.df[!is.na(stack.df$ConvertedCompYearly),]
+```
 
+```{r}
+# set up cut-off values 
+breaks <- c(10000,20000,40000,60000,80000,100000,120000,140000,160000,180000,200000)
+# specify interval/bin labels
+tags <- c("[10-20)","[20-40)", "[40-60)", "[60-80)", "[80-100)", "[100-120)","[120-140)", "[140-160)","[160-180)", "[180-200)")
+
+group_tags <- cut(stack.withsal.df$ConvertedCompYearly, 
+                  breaks=breaks, 
+                  include.lowest=TRUE, 
+                  right=FALSE, 
+                  labels=tags)
+# inspect bins
+summary(group_tags)
+
+ggplot(data = as_tibble(group_tags), mapping = aes(x=value)) + 
+  geom_bar(fill="bisque",color="white",alpha=0.7) + 
+  stat_count(geom="text", aes(label=sprintf("%.4f",..count../length(group_tags))), vjust=-0.5) +
+  labs(x='mean salary in thousands') +
+  theme_minimal() 
 ```
