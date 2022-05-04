@@ -8,6 +8,8 @@ editor_options:
 ```{r}
 library(ggplot2)
 library(tibble)
+library(NbClust)
+library(mclust)
 ```
 
 ```{r}
@@ -39,6 +41,63 @@ summary(group_tags)
 ggplot(data = as_tibble(group_tags), mapping = aes(x=value)) + 
   geom_bar(fill="bisque",color="white",alpha=0.7) + 
   stat_count(geom="text", aes(label=sprintf("%.4f",..count../length(group_tags))), vjust=-0.5) +
-  labs(x='mean salary in thousands') +
+  labs(x='mean salary in thousands for one year experience') +
   theme_minimal() 
+```
+
+
+```{r}
+
+
+stack.selectedvals.df <- subset(stack.entry.df, select=c(Country, Age, Gender, ConvertedCompYearly))
+
+```
+
+```{r}
+stack.selectedvals.df <- na.omit(stack.selectedvals.df)
+stack.fit.lm <- glm(Gender~ ., data = stack.selectedvals.df,family=binomial(logit))
+summary(stack.fit.lm)
+# stack.lm.step <- step(stack.fit.lm)
+# summary(stack.lm.step)
+
+```
+
+
+```{r}
+
+stack.gender.df <- stack.df[which(stack.df$Gender=="Man"|stack.df$Gender=="Woman"),]
+stack.compgender.df<- subset(stack.gender.df, select=c(Gender, Age, Country, ConvertedCompYearly))
+
+stack.compgender.df$Gender <- factor(stack.compgender.df$Gender)
+stack.compgender.df$Age <- factor(stack.compgender.df$Age)
+stack.compgender.df$Country <- factor(stack.compgender.df$Country)
+
+
+
+stack.compgender.df<-na.omit(stack.compgender.df)
+summary(stack.compgender.df)
+
+stack.compgender.fit.lm <- lm(ConvertedCompYearly~., data=stack.compgender.df)
+summary(stack.compgender.fit.lm)
+
+```
+
+
+```{r}
+
+stack.gender.df <- stack.df[which(stack.df$Gender=="Man"|stack.df$Gender=="Woman"),]
+stack.compgender.df<- subset(stack.gender.df, select=c(Gender, Age, ConvertedCompYearly))
+
+stack.compgender.df$Gender <- factor(stack.compgender.df$Gender)
+stack.compgender.df$Age <- factor(stack.compgender.df$Age)
+
+
+stack.compgender.df<-na.omit(stack.compgender.df)
+summary(stack.compgender.df)
+
+stack.compgender.fit.lm <- lm(ConvertedCompYearly~., data=stack.compgender.df)
+summary(stack.compgender.fit.lm)
+
+stack.lm.step <- step(stack.compgender.fit.lm)
+summary(stack.lm.step)
 ```
