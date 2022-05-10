@@ -45,170 +45,8 @@ ggplot(data = as_tibble(group_tags), mapping = aes(x=value)) +
   theme_minimal() 
 ```
 
-
-```{r}
-
-
-stack.selectedvals.df <- subset(stack.entry.df, select=c(Country, Age, Gender, ConvertedCompYearly))
-
-```
-
-```{r}
-stack.selectedvals.df <- na.omit(stack.selectedvals.df)
-stack.fit.lm <- glm(Gender~ ., data = stack.selectedvals.df,family=binomial(logit))
-summary(stack.fit.lm)
-# stack.lm.step <- step(stack.fit.lm)
-# summary(stack.lm.step)
-
-```
-
-
-```{r}
-
-stack.gender.df <- stack.df[which(stack.df$Gender=="Man"|stack.df$Gender=="Woman"),]
-stack.compgender.df<- subset(stack.gender.df, select=c(Gender, Age, Country, ConvertedCompYearly))
-
-stack.compgender.df$Gender <- factor(stack.compgender.df$Gender)
-stack.compgender.df$Age <- factor(stack.compgender.df$Age)
-stack.compgender.df$Country <- factor(stack.compgender.df$Country)
-
-
-
-stack.compgender.df<-na.omit(stack.compgender.df)
-summary(stack.compgender.df)
-
-stack.compgender.fit.lm <- lm(ConvertedCompYearly~., data=stack.compgender.df)
-summary(stack.compgender.fit.lm)
-
-```
-
-
-```{r}
-
-stack.gender.df <- stack.df[which(stack.df$Gender=="Man"|stack.df$Gender=="Woman"),]
-stack.compgender.df<- subset(stack.gender.df, select=c(Gender, Age, YearsCode, ConvertedCompYearly))
-
-stack.compgender.df$Gender <- factor(stack.compgender.df$Gender)
-stack.compgender.df$Age <- factor(stack.compgender.df$Age)
-
-
-stack.compgender.df<-na.omit(stack.compgender.df)
-summary(stack.compgender.df)
-
-stack.compgender.fit.lm <- lm(ConvertedCompYearly~., data=stack.compgender.df)
-summary(stack.compgender.fit.lm)
-
-stack.lm.step <- step(stack.compgender.fit.lm)
-summary(stack.lm.step)
-```
-
-```{r}
-
-RNGversion("4.1.2")
-set.seed(12345)
-
-
-data.df<- stack.compgender.df
-
-label.index<-4
-
-data.size<-nrow(data.df)
-train.size<-0.80
-
-train.row.nums<-sample(1:data.size, data.size*train.size, replace=FALSE)
-train.data<-subset(data.df[train.row.nums,])
-
-test.row.nums<-setdiff(1:data.size,train.row.nums)
-test.data<-subset(data.df[test.row.nums,])
-
-actual.labels= data.df$ConvertedCompYearly[test.row.nums]
-```
-
-```{r}
-
-mod.all.pred <-lm(ConvertedCompYearly~.,data=train.data)
-mod.step.pred <-lm(ConvertedCompYearly~Age,data=train.data)
-pred.all.mat<-predict (mod.all.pred, test.data, interval="prediction", level=0.95)
-pred.step.mat<-predict (mod.step.pred, test.data, interval="prediction", level=0.95)    
-    # obtain the vector of predictions from the prediction matrix (the first column)
-    pred.all.vals<-pred.all.mat[,1]
-    pred.step.vals<-pred.step.mat[,1]
-    # create the vector of actual values for this fold
-    actual.values<-test.data$ConvertedCompYearly
-    
-
-```
-
-```{r}
-hist(stack.compgender.fit.lm$residuals, prob = TRUE)
-lines(density(stack.compgender.fit.lm$residuals))
-
-hist(mod.step.pred$residuals, prob = TRUE)
-lines(density(mod.step.pred$residuals))
-
-plot(stack.compgender.fit.lm$residuals~stack.compgender.fit.lm$fitted.values)
-abline(h=0)
-
-plot(mod.step.pred$residuals~mod.step.pred$fitted.values)
-abline(h=0)
-
-sqrt(mean((actual.values - pred.all.vals)^2, na.rm = TRUE))
-sqrt(mean((actual.values - pred.step.vals)^2, na.rm = TRUE))
-```
-
-##Divide in data set
-
-
-
-
----
-title: "Stack Overflow Survey Analysis"
-author: "Eli Nottonson and Kenneth Heisler"
-output: html_notebook
-editor_options: 
-  chunk_output_type: console
----
-```{r}
-library(ggplot2)
-library(tibble)
-library(NbClust)
-library(mclust)
-```
-
-```{r}
-##import dataset
-stack.df <- read.csv("survey_results_public.csv")
-```
-
-
-```{r}
-##get rows that have a salary
-stack.withsal.df <- stack.df[!is.na(stack.df$ConvertedCompYearly),]
-stack.entry.df <- stack.withsal.df[which(stack.withsal.df$YearsCodePro<=1),]
-```
-
-```{r}
-# set up cut-off values 
-breaks <- c(5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,75000, 100000, 200000)
-# specify interval/bin labels
-tags <- c("[0-5)","[5-10)", "[15-20)", "[20-25)", "[25-30)", "[30-35)","[35-40)", "[40-45)","[45-50)", "[50-75)", "[75-100)", "[100-200)")
-
-group_tags <- cut(stack.entry.df$ConvertedCompYearly, 
-                  breaks=breaks, 
-                  include.lowest=TRUE, 
-                  right=FALSE, 
-                  labels=tags)
-# inspect bins
-summary(group_tags)
-
-ggplot(data = as_tibble(group_tags), mapping = aes(x=value)) + 
-  geom_bar(fill="bisque",color="white",alpha=0.7) + 
-  stat_count(geom="text", aes(label=sprintf("%.4f",..count../length(group_tags))), vjust=-0.5) +
-  labs(x='mean salary in thousands for one year experience') +
-  theme_minimal() 
-```
-
-
+###end of exploration
+###start of model creation
 ```{r}
 
 
@@ -264,7 +102,8 @@ summary(stack.compgender.fit.lm)
 stack.lm.step <- step(stack.compgender.fit.lm)
 summary(stack.lm.step)
 ```
-
+#2 models now created
+##train and test models
 ```{r}
 
 RNGversion("4.1.2")
@@ -302,6 +141,7 @@ pred.step.mat<-predict (mod.step.pred, test.data, interval="prediction", level=0
 
 ```
 
+###plot results
 ```{r}
 hist(stack.compgender.fit.lm$residuals, prob = TRUE)
 lines(density(stack.compgender.fit.lm$residuals))
@@ -317,4 +157,13 @@ abline(h=0)
 
 sqrt(mean((actual.values - pred.all.vals)^2, na.rm = TRUE))
 sqrt(mean((actual.values - pred.step.vals)^2, na.rm = TRUE))
+```
+
+```{r}
+options(scipen=999)
+plot(stack.compgender.df$YearsCode, stack.compgender.df$ConvertedCompYearly, main="Scatterplot of Years Coding and Yearly Compensation", 
+   xlab="Years Coding", ylab="Yearly Comp ", pch=19)
+options(scipen=999)
+plot(stack.compgender.df$Age, stack.compgender.df$ConvertedCompYearly, main="Age and Yearly Compensation", 
+   xlab="Age", ylab="Yearly Comp ", pch=19, ylim=c(0,500000))
 ```
